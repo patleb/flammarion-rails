@@ -74,7 +74,7 @@ module Rubame
     end
 
     def run(time = 0, &blk)
-      readable, writable = IO.select(@reading, @writing, nil, 0)
+      readable, _writable = IO.select(@reading, @writing)
 
       if readable
         readable.each do |socket|

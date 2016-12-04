@@ -130,6 +130,8 @@ GEM
       rspec-expectations (~> 3.5.0)
       rspec-mocks (~> 3.5.0)
       rspec-support (~> 3.5.0)
+    rspec-retry (0.5.2)
+      rspec-core (> 3.3, < 3.6)
     rspec-support (3.5.0)
     shoulda-callback-matchers (1.1.4)
       activesupport (>= 3)
@@ -161,6 +163,7 @@ DEPENDENCIES
   flammarion_rails!
   rails-controller-testing
   rspec-rails (~> 3.5)
+  rspec-retry (~> 0.5)
   shoulda-callback-matchers (~> 1.1)
   shoulda-matchers (~> 3.1)
   sqlite3

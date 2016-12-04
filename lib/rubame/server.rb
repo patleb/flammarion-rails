@@ -36,11 +36,11 @@ module Rubame
       else
         close(client)
       end
-      return nil
+
+      nil
     end
 
     def read(client)
-
       pairs = client.socket.recvfrom(2000)
       messages = []
 
@@ -49,19 +49,17 @@ module Rubame
       else
         client.frame << pairs[0]
 
-        while f = client.frame.next
-          if (f.type == :close)
+        while (f = client.frame.next)
+          if f.type == :close
             close(client)
             return messages
           else
             messages.push f
           end
         end
-        
       end
 
-      return messages
-
+      messages
     end
 
     def close(client)
@@ -70,6 +68,7 @@ module Rubame
       begin
         client.socket.close
       rescue
+        # do nothing
       end
       client.closed = true
     end
@@ -87,7 +86,7 @@ module Rubame
             client.messaged = msg
           end
 
-          blk.call(client) if client and blk
+          blk.call(client) if client && blk
         end
       end
 
@@ -142,7 +141,7 @@ module Rubame
 
     def get_lazy_fiber
       # Create the fiber if needed
-      if @lazy_fiber == nil or !@lazy_fiber.alive?
+      unless @lazy_fiber && @lazy_fiber.alive?
         @lazy_fiber = Fiber.new do
           @lazy_current_queue.each do |data|
             send(data)
@@ -151,7 +150,7 @@ module Rubame
         end
       end
 
-      return @lazy_fiber
+      @lazy_fiber
     end
 
     def send_some_lazy(count)
@@ -166,8 +165,7 @@ module Rubame
       begin
         get_lazy_fiber.resume
         completed += 1
-      end while (@lazy_queue.count > 0 or @lazy_current_queue.count > 0) and completed < count
-
+      end while (@lazy_queue.count > 0 || @lazy_current_queue.count > 0) && completed < count
     end
 
     def onopen(&blk)
@@ -197,17 +195,16 @@ module Rubame
         begin
           blk.call
         ensure
+          # do nothing
         end
       end
     end
   end
-
-  line = 0
 end
 
 if __FILE__==$0
   server = Rubame::Server.new("0.0.0.0", 25222)
-  while (!$quit)
+  while !$quit
     server.run do |client|
       client.onopen do
         puts "Server reports:  client open"

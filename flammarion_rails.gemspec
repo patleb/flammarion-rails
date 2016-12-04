@@ -27,4 +27,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'shoulda-callback-matchers', '~> 1.1'
   s.add_development_dependency 'rails-controller-testing'
   s.add_development_dependency 'email_spec', '~> 2.1'
+  s.add_development_dependency 'rspec-retry', '~> 0.5'
 end

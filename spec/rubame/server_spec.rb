@@ -60,7 +60,7 @@ describe Rubame::Server do
     finished = true
   end
 
-  it 'should be able to send a message to a client' do
+  it 'should be able to send a message to a client', retry: 1 do
     server = Rubame::Server.new("0.0.0.0", 29929)
 
     finished = false
@@ -112,7 +112,7 @@ describe Rubame::Server do
     finished = true
   end
 
-  xit 'should send lazy items after immediate ones' do
+  it 'should send lazy items after immediate ones', retry: 1 do
     server = Rubame::Server.new("0.0.0.0", 29929)
 
     finished = false

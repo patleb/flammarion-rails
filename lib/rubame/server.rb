@@ -23,10 +23,11 @@ module Rubame
       handshake = WebSocket::Handshake::Server.new
       client = Rubame::Client.new(socket, handshake, self)
       
-      while line = socket.gets
+      while (line = socket.gets)
         client.handshake << line
         break if client.handshake.finished?
       end
+
       if client.handshake.valid?
         @clients[socket] = client
         client.write handshake.to_s
@@ -101,7 +102,7 @@ module Rubame
     def initialize(socket, handshake, server)
       @socket = socket
       @handshake = handshake
-      @frame = WebSocket::Frame::Incoming::Server.new(:version => @handshake.version)
+      @frame = WebSocket::Frame::Incoming::Server.new(version: @handshake.version)
       @opened = false
       @messaged = []
       @closed = false
@@ -113,7 +114,7 @@ module Rubame
     end
 
     def send(data)
-      frame = WebSocket::Frame::Outgoing::Server.new(:version => @handshake.version, :data => data, :type => :text)
+      frame = WebSocket::Frame::Outgoing::Server.new(version: @handshake.version, data: data, type: :text)
       begin
         @socket.write frame
         @socket.flush

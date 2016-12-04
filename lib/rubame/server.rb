@@ -1,6 +1,5 @@
 require 'websocket'
 require 'socket'
-require 'fiber'
 
 module Rubame
   class Server
@@ -73,7 +72,7 @@ module Rubame
       client.closed = true
     end
 
-    def run(time = 0, &blk)
+    def run(&blk)
       readable, _writable = IO.select(@reading, @writing)
 
       if readable
@@ -89,16 +88,6 @@ module Rubame
           blk.call(client) if client && blk
         end
       end
-
-      # Check for lazy send items
-      timer_start = Time.now
-      time_passed = 0
-      begin
-        @clients.each do |s, c|
-          c.send_some_lazy(5)
-        end
-        time_passed = Time.now - timer_start
-      end while time_passed < time
     end
 
     def stop
@@ -115,8 +104,6 @@ module Rubame
       @frame = WebSocket::Frame::Incoming::Server.new(:version => @handshake.version)
       @opened = false
       @messaged = []
-      @lazy_queue = []
-      @lazy_current_queue = nil
       @closed = false
       @server = server
     end
@@ -133,39 +120,6 @@ module Rubame
       rescue
         @server.close(self) unless @closed
       end
-    end
-
-    def lazy_send(data)
-      @lazy_queue.push data
-    end
-
-    def get_lazy_fiber
-      # Create the fiber if needed
-      unless @lazy_fiber && @lazy_fiber.alive?
-        @lazy_fiber = Fiber.new do
-          @lazy_current_queue.each do |data|
-            send(data)
-            Fiber.yield unless @lazy_current_queue[-1] == data
-          end
-        end
-      end
-
-      @lazy_fiber
-    end
-
-    def send_some_lazy(count)
-      # To save on cpu cycles, we don't want to be chopping and changing arrays, which could get quite large.  Instead,
-      # we iterate over an array which we are sure won't change out from underneath us.
-      unless @lazy_current_queue
-        @lazy_current_queue = @lazy_queue
-        @lazy_queue = []
-      end
-
-      completed = 0
-      begin
-        get_lazy_fiber.resume
-        completed += 1
-      end while (@lazy_queue.count > 0 || @lazy_current_queue.count > 0) && completed < count
     end
 
     def onopen(&blk)

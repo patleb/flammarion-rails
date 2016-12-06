@@ -1,6 +1,3 @@
-require 'websocket'
-require 'socket'
-
 module Rubame
   class Server
     def initialize(host, port)

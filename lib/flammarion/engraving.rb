@@ -58,8 +58,6 @@ module Flammarion
     end
 
     def dispatch(params)
-      # Rails.application.routes.generate(controller: ctrl, action: act, id: n, other_param: any)
-
       http_method = params.delete(:method) || :get
       mapping = Rails.application.routes.recognize_path(params.delete(:url), method: http_method, **params)
 

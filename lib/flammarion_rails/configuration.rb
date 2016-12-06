@@ -16,11 +16,10 @@ module FlammarionRails
   end
 
   class Configuration
-    # attr_writer :config_name
-    # attr_accessor :other_config_name
+    attr_accessor :boot_path
 
-    # def config_name
-    #   @config_name ||= 'default value'
-    # end
+    def boot_path
+      @boot_path ||= '/'
+    end
   end
 end

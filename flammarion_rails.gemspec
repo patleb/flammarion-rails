@@ -18,7 +18,9 @@ Gem::Specification.new do |s|
   s.test_files = Dir["spec/**/*"]
 
   s.add_dependency "rails", "~> 5.0"
-  s.add_dependency 'websocket', '~> 1.0'
+  s.add_dependency "websocket", "~> 1.2"
+  s.add_dependency "launchy", "~> 2.4"
+  s.add_dependency "ext_ruby", "~> 0.2"
 
   s.add_development_dependency "sqlite3"
   s.add_development_dependency 'rspec-rails', '~> 3.5'

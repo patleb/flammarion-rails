@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+
+APP_PATH = File.expand_path('../config/application', __dir__)
+require APP_PATH
+Rails.application.require_environment!
+
+f = Flammarion::Engraving.new(exit_on_disconnect:true)
+f.wait_until_closed

@@ -1,5 +1,11 @@
 require "flammarion_rails/configuration"
 
+require 'open3'
+require "rubame/server"
+require "flammarion/server"
+require "flammarion/revelator"
+require "flammarion/engraving"
+
 module FlammarionRails
   class Engine < ::Rails::Engine
     # Initialize engine dependencies on wrapper application

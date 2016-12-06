@@ -11,9 +11,9 @@
 
     ws.onmessage = function(event) {
       var data = JSON.parse(event.data);
-      var new_document = document.open("text/html", "replace");
-      new_document.write(data.document);
-      new_document.close();
+      var boot_page = document.open("text/html", "replace");
+      boot_page.write(data.document);
+      boot_page.close();
     };
   </script>
 </head>

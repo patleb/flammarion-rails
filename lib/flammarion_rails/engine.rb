@@ -3,6 +3,7 @@ require "flammarion_rails/configuration"
 require 'open3'
 require "rubame/server"
 require "flammarion/server"
+require "flammarion/recognize_path"
 require "flammarion/revelator"
 require "flammarion/engraving"
 

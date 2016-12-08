@@ -1,6 +1,7 @@
 module Flammarion
   class Engraving
     include Revelator
+    include RecognizePath
 
     attr_accessor :on_disconnect, :on_connect, :sockets
 
@@ -49,27 +50,29 @@ module Flammarion
     end
 
     def process_message(msg)
-      result = dispatch(JSON.parse(msg).with_indifferent_access)
+      params = JSON.parse(msg).with_indifferent_access
+      action = params.delete(:action)
+      env = dispatch(params)
 
-      send_json(document: result.last.body)
+      send_json(action: action, html: env.last.body)
 
     rescue JSON::ParserError
       Rails.logger.debug "Invalid JSON String #{msg}"
     end
 
     def dispatch(params)
-      http_method = params.delete(:method) || :get
-      mapping = Rails.application.routes.recognize_path(params.delete(:url), method: http_method, **params)
+      http_method = (params[:method] ||= :get)
+      params = recognize_path(params.delete(:url), params)
 
-      unless mapping.key?(:controller)
+      unless params && params.key?(:controller)
         Rails.logger.debug "Path not found"
-        return ActionDispatch::Request::PASS_NOT_FOUND
+        return ActionDispatch::Request::PASS_NOT_FOUND.call(nil)
       end
 
-      controller_name = "#{mapping[:controller].underscore.camelize}Controller"
+      controller_name = "#{params.delete(:controller).underscore.camelize}Controller"
       controller      = ActiveSupport::Dependencies.constantize(controller_name)
-      action          = mapping[:action] || 'index'
-      request         = ActionDispatch::Request.new('rack.input' => '', 'REQUEST_METHOD' => http_method.to_s.upcase!)
+      action          = params.delete(:action) || 'index'
+      request         = ActionDispatch::Request.new('rack.input' => '', 'REQUEST_METHOD' => http_method.to_s.upcase!, 'action_dispatch.request.parameters' => params)
       response        = controller.make_response! request
 
       controller.dispatch(action, request, response)

@@ -72,7 +72,11 @@ module Flammarion
       controller_name = "#{params.delete(:controller).underscore.camelize}Controller"
       controller      = ActiveSupport::Dependencies.constantize(controller_name)
       action          = params.delete(:action) || 'index'
-      request         = ActionDispatch::Request.new('rack.input' => '', 'REQUEST_METHOD' => http_method.to_s.upcase!, 'action_dispatch.request.parameters' => params)
+      request         = ActionDispatch::Request.new(
+        'rack.input' => '',
+        'REQUEST_METHOD' => http_method.to_s.upcase!,
+        'action_dispatch.request.parameters' => params,
+      )
       response        = controller.make_response! request
 
       controller.dispatch(action, request, response)

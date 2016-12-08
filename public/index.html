@@ -49,16 +49,36 @@
       console.log(event);
     };
 
+    // allow to add custom actions before sending data on the websocket
+    ws.send_before_actions = [];
+    ws.send_actions = {};
+    ws.send_handler = ws.send;
+
+    ws.send = function send(data) {
+      ws.send_before_actions.forEach(function (before_action) {
+        before_action(event);
+      });
+      var action = ws.send_actions[data.action];
+      if (action) {
+        action(data);
+      }
+      ws.send_handler(JSON.stringify(data));
+    };
+
     // allow to add custom actions after receiving data on the websocket
+    ws.onmessage_before_actions = [];
     ws.onmessage_actions = {page: function (event) {
-      var boot_page = document.open("text/html", "replace");
-      boot_page.write(ws_data.html);
-      boot_page.close();
+      var page = document.open("text/html", "replace");
+      page.write(ws_data.html);
+      page.close();
     }};
 
     ws.onmessage = function(event) {
       try {
         ws_data = JSON.parse(event.data);
+        ws.onmessage_before_actions.forEach(function (before_action) {
+          before_action(event);
+        });
         var action = ws.onmessage_actions[ws_data.action];
         if (action) {
           action(event);
@@ -69,18 +89,6 @@
         console.log(error);
         console.log(error.stack);
       }
-    };
-
-    // allow to add custom actions before sending data on the websocket
-    ws.send_actions = {};
-
-    ws.send_handler = ws.send;
-    ws.send = function send(data) {
-      var action = ws.send_actions[data.action];
-      if (action) {
-        action(data);
-      }
-      ws.send_handler(JSON.stringify(data));
     };
 
     // disable back/forward

@@ -2,6 +2,7 @@ PATH
   remote: .
   specs:
     flammarion_rails (0.1.0)
+      ext_rails (~> 0.3)
       ext_ruby (~> 0.2)
       launchy (~> 2.4)
       rails (~> 5.0)
@@ -58,6 +59,8 @@ GEM
       launchy (~> 2.1)
       mail (~> 2.6.3)
     erubis (2.7.0)
+    ext_rails (0.3.0)
+      rails (~> 5.0)
     ext_ruby (0.2.0)
       unicode (~> 0.4)
     fantaskspec (1.0.0)

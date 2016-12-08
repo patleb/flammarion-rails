@@ -51,7 +51,7 @@ module Flammarion
 
     def process_message(msg)
       params = JSON.parse(msg).with_indifferent_access
-      action = params.delete(:action)
+      action = params.delete(:action) || 'page'
       env = dispatch(params)
 
       send_json(action: action, html: env.last.body)

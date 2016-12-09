@@ -43,6 +43,7 @@
         reason = "Unknown reason";
       }
       console.log(reason);
+      document.title = "Disconnected: " + reason;
     };
 
     ws.onerror = function(event) {
@@ -85,9 +86,10 @@
         }
       }
       catch(error) {
-        console.log(event.data);
+        console.log(event);
         console.log(error);
         console.log(error.stack);
+        document.title = 'error';
       }
     };
 

@@ -52,31 +52,56 @@ module Flammarion
     def process_message(msg)
       params = JSON.parse(msg).with_indifferent_access
       action = params.delete(:action) || 'page'
-      env = dispatch(params)
+      status, headers, body = dispatch(params)
 
-      send_json(action: action, html: env.last.body)
+      case status
+      when 302
+        params = {
+          url: headers['Location'].sub(/^.*:\/{2}(:\d{0,4})?/i, ''),
+          session: body.instance_variable_get(:@response).request.session
+        }.with_indifferent_access
+        _status, _headers, body = dispatch(params)
+        send_json(action: 'page', html: body.body)
+      else
+        send_json(action: action, html: body.body)
+      end
 
     rescue JSON::ParserError
       Rails.logger.debug "Invalid JSON String #{msg}"
+
+    rescue => e
+      Rails.logger.error "  [#{e.class}]\n#{e.message}\n" << e.backtrace.first(20).join("\n")
+      send_json(action: 'error', title: e.class.name)
     end
 
     def dispatch(params)
+      if params[:method] == 'post'
+        params.merge!(Rack::Utils.parse_nested_query(params.delete(:form)))
+      end
+      if params.key?(:_method)
+        params[:method] = params[:_method]
+      end
       http_method = (params[:method] ||= :get)
-      params = recognize_path(params.delete(:url), params)
+      session = params.delete(:session)
 
-      unless params && params.key?(:controller)
-        Rails.logger.debug "Path not found"
-        return ActionDispatch::Request::PASS_NOT_FOUND.call(nil)
+      url = params.delete(:url)
+      uri = URI.parse(url)
+      query_params = Rack::Utils.parse_nested_query(uri.query)
+      path_params = recognize_path(url, params)
+      unless path_params.key?(:controller)
+        raise ActionController::RoutingError
       end
 
-      controller_name = "#{params.delete(:controller).underscore.camelize}Controller"
+      controller_name = "#{path_params[:controller].underscore.camelize}Controller"
       controller      = ActiveSupport::Dependencies.constantize(controller_name)
-      action          = params.delete(:action) || 'index'
-      request         = ActionDispatch::Request.new(
+      action          = path_params[:action] || 'index'
+      request         = {
         'rack.input' => '',
         'REQUEST_METHOD' => http_method.to_s.upcase!,
-        'action_dispatch.request.parameters' => params,
-      )
+        'action_dispatch.request.parameters' => path_params.merge!(params).merge!(query_params),
+      }
+      request['rack.session'] = session if session
+      request         = ActionDispatch::Request.new(request)
       response        = controller.make_response! request
 
       controller.dispatch(action, request, response)

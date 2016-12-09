@@ -24,6 +24,8 @@ Gem::Specification.new do |s|
   s.add_dependency "ext_rails", "~> 0.3"
 
   s.add_development_dependency "jquery-rails", "~> 4.2"
+  s.add_development_dependency 'nprogress-rails', '~> 0.2'
+  s.add_development_dependency "pjax_rails", '~> 0.4'
   s.add_development_dependency "sqlite3"
   s.add_development_dependency 'rspec-rails', '~> 3.5'
   s.add_development_dependency 'fantaskspec', '~> 1.0'

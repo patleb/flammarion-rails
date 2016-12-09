@@ -1,3 +1,11 @@
+GIT
+  remote: git://github.com/rails/pjax_rails.git
+  revision: 98b6275fc3ab13b6804bf42ca02e7b75f9c415ac
+  specs:
+    pjax_rails (0.5.0)
+      jquery-rails
+      railties (>= 3.2, < 6.0)
+
 PATH
   remote: .
   specs:
@@ -89,6 +97,7 @@ GEM
     nio4r (1.2.1)
     nokogiri (1.6.8.1)
       mini_portile2 (~> 2.1.0)
+    nprogress-rails (0.2.0.2)
     public_suffix (2.0.4)
     rack (2.0.1)
     rack-test (0.6.3)
@@ -172,6 +181,8 @@ DEPENDENCIES
   fantaskspec (~> 1.0)
   flammarion_rails!
   jquery-rails (~> 4.2)
+  nprogress-rails (~> 0.2)
+  pjax_rails!
   rails-controller-testing
   rspec-rails (~> 3.5)
   shoulda-callback-matchers (~> 1.1)

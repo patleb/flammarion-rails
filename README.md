@@ -1,8 +1,14 @@
 # FlammarionRails
 
+* TODO: custom rake task actions
+
+* TODO: app packaging / installation procedure
+
 * TODO: modal forms
 
-* TODO: custom rake task actions
+* TODO: ajax
+
+* TODO: sortable (might be related to referer/current url)
 
 * TODO: request.referer --> return_to
 
@@ -13,8 +19,6 @@
 * TODO: 404 and errors (rotate log files)
 
 * TODO: settings/preferences
-
-* TODO: app packaging / installation procedure
 
 * TODO: try if 'action_dispatch.request.path_parameters' filled could prevent rails_admin to crash in index_path
 

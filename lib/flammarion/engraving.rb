@@ -12,10 +12,7 @@ module Flammarion
     #  disconnected (i.e., closed)
     # @option options [Boolean] :exit_on_disconnect (false) Will call +exit+
     #  when the widow is closed if this option is true.
-    # @option options [Boolean] :close_on_exit (false) Will close the window
-    #  when the process exits if this is true. Otherwise, it will just stay
-    #  around, but not actually be interactive.
-    # @raise {SetupError} if neither chrome is set up correctly and
+    # @raise {SetupError} if chrome is not set up correctly and
     #  and Flammarion is unable to display the engraving.
     def initialize(**options)
       @chrome = OpenStruct.new
@@ -28,19 +25,12 @@ module Flammarion
       @window_id = @@server.register_window(self)
       open_a_window(options) unless options[:no_window]
       wait_for_a_connection unless options[:no_wait]
-
-      at_exit {close if window_open?} if options.fetch(:close_on_exit, true)
     end
 
     # Blocks the current thread until the window has been closed. All user
     # interactions and callbacks will continue in other threads.
     def wait_until_closed
       sleep 1 until @sockets.empty?
-    end
-
-    # Is this Engraving displayed on the screen.
-    def window_open?
-      !@sockets.empty?
     end
 
     def disconnect(ws)
@@ -55,18 +45,14 @@ module Flammarion
       dispatch(params)
 
       if status == 302
-        params = {
-          url: headers['Location'].sub(/^.*:\/{2}(:\d{0,4})?/i, ''),
-          session: response.request.session
-        }.with_indifferent_access
-        dispatch(params)
-        render(action: 'page', html: response.body)
+        dispatch(url: headers['Location'].sub(/^.*:\/{2}(:\d{0,4})?/i, ''), session: response.request.session)
+        render(action: 'page', body: response.body)
       elsif headers['Content-Transfer-Encoding'] == 'binary'
         filename = headers['Content-Disposition'].sub(/.*filename=/, '').gsub(/(^"|"$)/, '')
         render(action: 'file', name: filename)
         render(response.body)
       else
-        render(action: action, html: response.body)
+        render(action: action, body: response.body)
       end
 
     rescue => e

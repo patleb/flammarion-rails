@@ -34,7 +34,7 @@ if $.pjax?
 
   ws.onmessage_actions.pjax = (event) ->
     new_page = $("<div>")
-    new_page.html(ws_data.html)
+    new_page.html(ws_data.body)
     container = new_page.find('[data-pjax-container]')
     $('[data-pjax-container]').html(container.html())
     $(document).trigger('rails_admin.dom_ready')

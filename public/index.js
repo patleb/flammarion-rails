@@ -81,7 +81,7 @@ ws.onmessage_skip_action = false;
 ws.onmessage_actions = {
   page: function (event) {
     var page = document.open("text/html", "replace");
-    page.write(ws_data.html);
+    page.write(ws_data.body);
     page.close();
   },
   error: function (event) {

@@ -23,7 +23,6 @@ module Flammarion
       @on_connect = options[:on_connect]
       @on_disconnect = options[:on_disconnect]
       @exit_on_disconnect = options.fetch(:exit_on_disconnect, false)
-      @processing = false
 
       start_server
       @window_id = @@server.register_window(self)
@@ -51,11 +50,6 @@ module Flammarion
     end
 
     def process_message(msg)
-      if @processing
-        return render(action: 'error', title: 'Processing...')
-      end
-      @processing = true
-
       params = JSON.parse(msg).with_indifferent_access
       action = params.delete(:action) || 'page'
       dispatch(params)
@@ -80,8 +74,6 @@ module Flammarion
       Rails.logger.error "  [#{e.class}]\n#{e.message}\n" << e.backtrace.first(20).join("\n")
       Rails.logger.error "[END]"
       render(action: 'error', title: "#{e.class}: #{e.message}")
-    ensure
-      @processing = false
     end
 
     def dispatch(params)

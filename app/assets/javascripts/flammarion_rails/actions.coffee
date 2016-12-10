@@ -24,18 +24,20 @@ if NProgress?
 
 # Pjax
 ########################################
+# Note: it's working for now, but it might be better to do something similar to the real pjax implementation
 
-PROTOCOL = /^.*:\/{2}/i
-$(document).on 'pjax:beforeSend', (event, xhr, settings) ->
-  event.preventDefault()
-  ws.send(action: 'pjax', url: settings.url.replace(PROTOCOL, ''))
+if $.pjax?
+  PROTOCOL = /^.*:\/{2}/i
+  $(document).on 'pjax:beforeSend', (event, xhr, settings) ->
+    event.preventDefault()
+    ws.send(action: 'pjax', url: settings.url.replace(PROTOCOL, ''))
 
-ws.onmessage_actions.pjax = (event) ->
-  new_page = $("<div>")
-  new_page.html(ws_data.html)
-  container = new_page.find('[data-pjax-container]')
-  $('[data-pjax-container]').html(container.html())
-  $(document).trigger('rails_admin.dom_ready')
+  ws.onmessage_actions.pjax = (event) ->
+    new_page = $("<div>")
+    new_page.html(ws_data.html)
+    container = new_page.find('[data-pjax-container]')
+    $('[data-pjax-container]').html(container.html())
+    $(document).trigger('rails_admin.dom_ready')
 
 # Submit
 ########################################
@@ -46,7 +48,11 @@ $(document).on 'submit', (event) ->
   return if form.hasClass('pjax-form')
   ws.send(action: 'submit', url: form.attr('action'), form: form.serialize(), button: document.activeElement.name)
 
-ws.onmessage_actions.submit = ws.onmessage_actions.pjax
+ws.onmessage_actions.submit =
+  if $.pjax?
+    ws.onmessage_actions.pjax
+  else
+    ws.onmessage_actions.page
 
 # File
 ########################################
@@ -68,3 +74,22 @@ if saveAs?
       document.title = window.ws_file
       window.ws_file = null
       ws.onmessage_skip_action = true
+
+# Ajax
+########################################
+# Note: app specific, $.ajax must be overriden
+# Ex.:
+# window.ajax_handler = $.ajax
+#
+# $.ajax = (xhr) ->
+#   if xhr.type?
+#     return ws.ajax_handler(xhr)
+#
+#   switch xhr.dataType
+#     when 'text'
+#       modal = $('#modal').data('ra-remoteForm')
+#       ...
+#     when 'json'
+#       ...
+#     else
+#       ...

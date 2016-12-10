@@ -12,6 +12,7 @@ PATH
     flammarion_rails (0.1.0)
       ext_rails (~> 0.3)
       ext_ruby (~> 0.2)
+      jquery-rails (~> 4.2)
       launchy (~> 2.4)
       rails (~> 5.0)
       websocket (~> 1.2)
@@ -180,7 +181,6 @@ DEPENDENCIES
   email_spec (~> 2.1)
   fantaskspec (~> 1.0)
   flammarion_rails!
-  jquery-rails (~> 4.2)
   nprogress-rails (~> 0.2)
   pjax_rails!
   rails-controller-testing

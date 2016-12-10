@@ -62,11 +62,10 @@ module Rubame
     def close(client)
       @reading.delete client.socket
       @clients.delete client.socket
-      begin
-        client.socket.close
-      rescue
-        # do nothing
-      end
+      client.socket.close
+    rescue
+      # do nothing
+    ensure
       client.closed = true
     end
 
@@ -112,44 +111,32 @@ module Rubame
 
     def send(data)
       frame = WebSocket::Frame::Outgoing::Server.new(version: @handshake.version, data: data, type: :text)
-      begin
-        @socket.write frame
-        @socket.flush
-      rescue
-        @server.close(self) unless @closed
-      end
+      @socket.write frame
+      @socket.flush
+    rescue
+      @server.close(self) unless @closed
     end
 
     def onopen(&blk)
-      if @opened
-        begin
-          blk.call
-        ensure
-          @opened = false
-        end
-      end
+      return unless @opened
+      blk.call
+    ensure
+      @opened = false
     end
 
     def onmessage(&blk)
-      if @messaged.size > 0
-        begin
-          @messaged.each do |x|
-            blk.call(x.to_s)
-          end
-        ensure
-          @messaged = []
-        end
+      @messaged.each do |x|
+        blk.call(x.to_s)
       end
+    ensure
+      @messaged = []
     end
 
     def onclose(&blk)
-      if @closed
-        begin
-          blk.call
-        ensure
-          # do nothing
-        end
-      end
+      return unless @closed
+      blk.call
+    ensure
+      # do nothing
     end
   end
 end

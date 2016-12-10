@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <title>...</title>
   <script>
     window.qs = new URLSearchParams(location.search);
     window.ws = new WebSocket("ws://localhost:" + qs.get("port") + "/" + qs.get("path"));
@@ -50,54 +51,73 @@
       console.log(event);
     };
 
-    // allow to add custom actions before sending data on the websocket
     ws.send_before_actions = [];
+    ws.send_skip_action = false;
     ws.send_actions = {};
     ws.send_handler = ws.send;
 
     ws.send = function send(data) {
-      ws.send_before_actions.forEach(function (before_action) {
-        before_action(event);
-      });
-      var action = ws.send_actions[data.action];
-      if (action) {
-        action(data);
+      try {
+        ws.send_before_actions.forEach(function (before_action) {
+          if (!ws.send_skip_action) {
+            before_action(event);
+          }
+        });
+        if (!ws.send_skip_action) {
+          var action = ws.send_actions[data.action];
+          if (action) {
+            action(data);
+          }
+          ws.send_handler(JSON.stringify(data));
+        }
       }
-      ws.send_handler(JSON.stringify(data));
+      catch(error) {
+        console.log(data);
+        console.log(error);
+        document.title = 'Error on message sent...';
+      }
+      finally {
+        ws.send_skip_action = false;
+      }
     };
 
-    // allow to add custom actions after receiving data on the websocket
     ws.onmessage_before_actions = [];
-    ws.onmessage_actions = {page: function (event) {
-      var page = document.open("text/html", "replace");
-      page.write(ws_data.html);
-      page.close();
-    }};
+    ws.onmessage_skip_action = false;
+    ws.onmessage_actions = {
+      page: function (event) {
+        var page = document.open("text/html", "replace");
+        page.write(ws_data.html);
+        page.close();
+      },
+      error: function (event) {
+        document.title = ws_data.title;
+      }
+    };
 
     ws.onmessage = function(event) {
       try {
-        ws_data = JSON.parse(event.data);
         ws.onmessage_before_actions.forEach(function (before_action) {
-          before_action(event);
+          if (!ws.onmessage_skip_action) {
+            before_action(event);
+          }
         });
-        var action = ws.onmessage_actions[ws_data.action];
-        if (action) {
-          action(event);
+        if (!ws.onmessage_skip_action) {
+          ws_data = JSON.parse(event.data);
+          var action = ws.onmessage_actions[ws_data.action];
+          if (action) {
+            action(event);
+          }
         }
       }
       catch(error) {
         console.log(event);
         console.log(error);
-        console.log(error.stack);
-        document.title = 'error';
+        document.title = 'Error on message received...';
+      }
+      finally {
+        ws.onmessage_skip_action = false;
       }
     };
-
-    // disable back/forward
-    history.pushState(null, null, document.URL);
-    window.addEventListener('popstate', function () {
-      history.pushState(null, null, document.URL);
-    });
   </script>
 </head>
 <body>

@@ -1,8 +1,6 @@
 # FlammarionRails
 
 * TODO: modal forms
- 
-* TODO: export files
 
 * TODO: custom rake task actions
 
@@ -17,5 +15,11 @@
 * TODO: settings/preferences
 
 * TODO: app packaging / installation procedure
+
+* TODO: try if 'action_dispatch.request.path_parameters' filled could prevent rails_admin to crash in index_path
+
+* TODO: non-blocking download
+
+* TODO: use pjax layout instead of full layout
 
 This project rocks and uses MIT-LICENSE.

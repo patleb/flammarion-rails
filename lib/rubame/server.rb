@@ -109,8 +109,9 @@ module Rubame
       @socket.write data
     end
 
-    def send(data)
-      frame = WebSocket::Frame::Outgoing::Server.new(version: @handshake.version, data: data, type: :text)
+    def send_data(data, binary = false)
+      type = binary ? :binary : :text
+      frame = WebSocket::Frame::Outgoing::Server.new(version: @handshake.version, data: data, type: type)
       @socket.write frame
       @socket.flush
     rescue

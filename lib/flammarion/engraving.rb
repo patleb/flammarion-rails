@@ -3,7 +3,7 @@ module Flammarion
     include Revelator
     include RecognizePath
 
-    attr_accessor :on_disconnect, :on_connect, :sockets
+    attr_accessor :on_disconnect, :on_connect, :sockets, :request, :status, :headers, :response
 
     # Creates a new Engraving (i.e., a new display window)
     # @option options [Proc] :on_connect Called when the display window is
@@ -23,6 +23,7 @@ module Flammarion
       @on_connect = options[:on_connect]
       @on_disconnect = options[:on_disconnect]
       @exit_on_disconnect = options.fetch(:exit_on_disconnect, false)
+      @processing = false
 
       start_server
       @window_id = @@server.register_window(self)
@@ -50,61 +51,74 @@ module Flammarion
     end
 
     def process_message(msg)
+      if @processing
+        return render(action: 'error', title: 'Processing...')
+      end
+      @processing = true
+
       params = JSON.parse(msg).with_indifferent_access
       action = params.delete(:action) || 'page'
-      status, headers, body = dispatch(params)
+      dispatch(params)
 
-      case status
-      when 302
+      if status == 302
         params = {
           url: headers['Location'].sub(/^.*:\/{2}(:\d{0,4})?/i, ''),
-          session: body.instance_variable_get(:@response).request.session
+          session: response.request.session
         }.with_indifferent_access
-        _status, _headers, body = dispatch(params)
-        send_json(action: 'page', html: body.body)
+        dispatch(params)
+        render(action: 'page', html: response.body)
+      elsif headers['Content-Transfer-Encoding'] == 'binary'
+        filename = headers['Content-Disposition'].sub(/.*filename=/, '').gsub(/(^"|"$)/, '')
+        render(action: 'file', name: filename)
+        render(response.body)
       else
-        send_json(action: action, html: body.body)
+        render(action: action, html: response.body)
       end
 
-    rescue JSON::ParserError
-      Rails.logger.debug "Invalid JSON String #{msg}"
-
     rescue => e
+      Rails.logger.error "[EXCEPTION][#{msg}]"
       Rails.logger.error "  [#{e.class}]\n#{e.message}\n" << e.backtrace.first(20).join("\n")
-      send_json(action: 'error', title: e.class.name)
+      Rails.logger.error "[END]"
+      render(action: 'error', title: "#{e.class}: #{e.message}")
+    ensure
+      @processing = false
     end
 
     def dispatch(params)
-      if params[:method] == 'post'
+      session = params.delete(:session)
+      url = params.delete(:url)
+      uri = URI.parse(url)
+      query_params = Rack::Utils.parse_nested_query(uri.query)
+
+      if params.key?(:form)
+        params[:method] = 'post'
+        params[params.delete(:button)] = ''
         params.merge!(Rack::Utils.parse_nested_query(params.delete(:form)))
       end
       if params.key?(:_method)
         params[:method] = params[:_method]
       end
-      http_method = (params[:method] ||= :get)
-      session = params.delete(:session)
+      params[:method] ||= :get
 
-      url = params.delete(:url)
-      uri = URI.parse(url)
-      query_params = Rack::Utils.parse_nested_query(uri.query)
       path_params = recognize_path(url, params)
       unless path_params.key?(:controller)
-        raise ActionController::RoutingError
+        raise ActionController::RoutingError, "No route matches [#{url}]#{params.inspect}"
       end
 
       controller_name = "#{path_params[:controller].underscore.camelize}Controller"
       controller      = ActiveSupport::Dependencies.constantize(controller_name)
       action          = path_params[:action] || 'index'
-      request         = {
+      request_env     = {
         'rack.input' => '',
-        'REQUEST_METHOD' => http_method.to_s.upcase!,
+        'REQUEST_METHOD' => params[:method].to_s.upcase,
         'action_dispatch.request.parameters' => path_params.merge!(params).merge!(query_params),
       }
-      request['rack.session'] = session if session
-      request         = ActionDispatch::Request.new(request)
+      request_env['rack.session'] = session if session
+      self.request    = ActionDispatch::Request.new(request_env)
       response        = controller.make_response! request
 
-      controller.dispatch(action, request, response)
+      self.status, self.headers, body = controller.dispatch(action, request, response)
+      self.response = body.instance_variable_get(:@response)
     end
 
     def start_server
@@ -115,12 +129,19 @@ module Flammarion
       @@server
     end
 
-    def send_json(val)
+    def render(body)
       if @sockets.empty?
         open_a_window
         wait_for_a_connection
       end
-      @sockets.each{ |ws| ws.send val.to_json }
+      if body.is_a? Hash
+        body = body.to_json
+      else
+        binary = true
+      end
+      @sockets.each do |ws|
+        ws.send_data(body, binary)
+      end
       nil
     end
   end

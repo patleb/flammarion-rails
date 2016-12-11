@@ -76,11 +76,11 @@ module Flammarion
       if params.key?(:_method)
         params[:method] = params[:_method]
       end
-      params[:method] ||= :get
+      http_method = (params[:method] ||= :get).to_s.upcase!
 
-      path_params = recognize_path(url, params)
+      path_params = recognize_path(uri.path, params.merge!(query_params))
       unless path_params.key?(:controller)
-        raise ActionController::RoutingError, "No route matches [#{url}]#{params.inspect}"
+        raise ActionController::RoutingError, "No route matches [#{http_method}] #{url}"
       end
 
       controller_name = "#{path_params[:controller].underscore.camelize}Controller"
@@ -88,8 +88,9 @@ module Flammarion
       action          = path_params[:action] || 'index'
       request_env     = {
         'rack.input' => '',
-        'REQUEST_METHOD' => params[:method].to_s.upcase,
-        'action_dispatch.request.parameters' => path_params.merge!(params).merge!(query_params),
+        'REQUEST_METHOD' => http_method,
+        'action_dispatch.request.parameters' => params.merge!(path_params),
+        'action_dispatch.request.path_parameters' => path_params,
       }
       request_env['rack.session'] = session if session
       self.request    = ActionDispatch::Request.new(request_env)

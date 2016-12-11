@@ -14,13 +14,11 @@
 
 * TODO: disable refresh / reload (disable left click)
 
-* TODO: rack integration --> railties-5.0.0.1/lib/rails/engine.rb
+* TODO: all 'action_dispatch.request....' or rack integration --> railties-5.0.0.1/lib/rails/engine.rb
 
 * TODO: 404 and errors (rotate log files)
 
 * TODO: settings/preferences
-
-* TODO: try if 'action_dispatch.request.path_parameters' filled could prevent rails_admin to crash in index_path
 
 * TODO: non-blocking download
 

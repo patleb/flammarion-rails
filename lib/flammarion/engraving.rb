@@ -5,6 +5,8 @@ module Flammarion
 
     attr_accessor :on_disconnect, :on_connect, :sockets, :request, :status, :headers, :response
 
+    PROTOCOL = /^.*:\/{2}(:\d{0,4})?/i
+
     # Creates a new Engraving (i.e., a new display window)
     # @option options [Proc] :on_connect Called when the display window is
     #  connected (i.e., displayed)
@@ -45,7 +47,7 @@ module Flammarion
       dispatch(params)
 
       if status == 302
-        dispatch(url: headers['Location'].sub(/^.*:\/{2}(:\d{0,4})?/i, ''), session: response.request.session)
+        dispatch(url: headers['Location'].sub(PROTOCOL, ''), session: response.request.session)
         render(action: 'page', body: response.body)
       elsif headers['Content-Transfer-Encoding'] == 'binary'
         filename = headers['Content-Disposition'].sub(/.*filename=/, '').gsub(/(^"|"$)/, '')

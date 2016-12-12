@@ -1,6 +1,8 @@
 # FlammarionRails
 
-* TODO: custom rake task actions
+* TODO: accept + mime + content_type + session + referer + pjax + csrf... or reuse middlewares?
+
+* TODO: change before actions for an array of hashes
 
 * TODO: app packaging / installation procedure
 

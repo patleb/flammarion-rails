@@ -12,8 +12,6 @@ module Flammarion
     #  connected (i.e., displayed)
     # @option options [Proc] :on_disconnect Called when the display windows is
     #  disconnected (i.e., closed)
-    # @option options [Boolean] :exit_on_disconnect (false) Will call +exit+
-    #  when the widow is closed if this option is true.
     # @raise {SetupError} if chrome is not set up correctly and
     #  and Flammarion is unable to display the engraving.
     def initialize(**options)
@@ -21,7 +19,6 @@ module Flammarion
       @sockets = []
       @on_connect = options[:on_connect]
       @on_disconnect = options[:on_disconnect]
-      @exit_on_disconnect = options.fetch(:exit_on_disconnect, false)
 
       start_server
       @window_id = @@server.register_window(self)
@@ -37,7 +34,7 @@ module Flammarion
 
     def disconnect(ws)
       @sockets.delete ws
-      exit 0 if @exit_on_disconnect
+      exit 0
       @on_disconnect.call if @on_disconnect
     end
 
@@ -69,11 +66,12 @@ module Flammarion
       url = params.delete(:url)
       uri = URI.parse(url)
       query_params = Rack::Utils.parse_nested_query(uri.query)
+      request_params = {}
 
       if params.key?(:form)
         params[:method] = 'post'
-        params[params.delete(:button)] = ''
-        params.merge!(Rack::Utils.parse_nested_query(params.delete(:form)))
+        request_params = Rack::Utils.parse_nested_query(params.delete(:form))
+        request_params[params.delete(:button)] = ''
       end
       if params.key?(:_method)
         params[:method] = params[:_method]
@@ -90,9 +88,15 @@ module Flammarion
       action          = path_params[:action] || 'index'
       request_env     = {
         'rack.input' => '',
+        'QUERY_STRING' => uri.query,
         'REQUEST_METHOD' => http_method,
-        'action_dispatch.request.parameters' => params.merge!(path_params),
+        'REQUEST_PATH' => uri.path,
+        'REQUEST_URI' => url,
+        'PATH_INFO' => uri.path,
+        'action_dispatch.request.query_parameters' => query_params,
+        'action_dispatch.request.request_parameters' => request_params,
         'action_dispatch.request.path_parameters' => path_params,
+        'action_dispatch.request.parameters' => params.merge!(request_params).merge!(path_params),
       }
       request_env['rack.session'] = session if session
       self.request    = ActionDispatch::Request.new(request_env)

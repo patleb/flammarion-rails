@@ -2,12 +2,8 @@ module Flammarion
   class SetupError < StandardError; end
 
   module Revelator
-    CHROME_PATH = ENV["FLAMMARION_REVELATOR_PATH"] || 'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe'
-
     def open_a_window(**options)
       index_path = FlammarionRails::Engine.root.join('public', 'index.html')
-      index_path = `cygpath -w '#{index_path}'`.strip if RbConfig::CONFIG["host_os"] == "cygwin"
-
       url = "file://#{index_path}?" + { port: server.port, path: @window_id, boot: FlammarionRails.config.boot_path }.to_query
       @browser_options = options.merge(url: url)
       @requested_browser = ENV["FLAMMARION_BROWSER"] || options[:browser]
@@ -47,14 +43,9 @@ module Flammarion
 
     browser :chrome_windows do |options|
       return false unless RbConfig::CONFIG["host_os"] =~ /cygwin|mswin|mingw/
-      file_path = File.absolute_path(File.join(File.dirname(__FILE__), ".."))
-      file_path = `cygpath -w '#{file_path}'`.strip if RbConfig::CONFIG["host_os"] == "cygwin"
-      resource = %[file\://#{file_path}/html/build/index.html]
-      resource = "http://localhost:4567/" if options[:development_mode]
-      chrome_path = CHROME_PATH
-      chrome_path = `cygpath -u '#{CHROME_PATH}'`.strip if RbConfig::CONFIG["host_os"] == "cygwin"
-      return false unless File.exist?(chrome_path)
-      Process.detach(spawn(chrome_path, %[--app=#{resource}?path=#{@window_id}&port=#{server.port}]))
+      executable = 'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe'
+      return false unless File.exist?(executable)
+      Process.detach(spawn(executable, %[--app=#{options[:url]}]))
     end
 
     browser :chrome do |options|

@@ -65,11 +65,11 @@ module Flammarion
       session = params.delete(:session)
       url = params.delete(:url)
       uri = URI.parse(url)
-      query_params = Rack::Utils.parse_nested_query(uri.query)
+      query_params = parse_nested_query(uri.query)
 
       request_params = {}
       if params.key?(:form)
-        request_params = Rack::Utils.parse_nested_query(params.delete(:form))
+        request_params = parse_nested_query(params.delete(:form))
         request_params[params.delete(:button)] = ''
         params[:method] = request_params[:_method] || 'post'
       end
@@ -125,6 +125,10 @@ module Flammarion
         ws.send_data(body, binary)
       end
       nil
+    end
+
+    def parse_nested_query(query)
+      Rack::Utils.parse_nested_query(query).with_indifferent_access
     end
   end
 end

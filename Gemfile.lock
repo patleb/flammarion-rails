@@ -9,7 +9,7 @@ GIT
 PATH
   remote: .
   specs:
-    flammarion_rails (0.2.3)
+    flammarion_rails (0.2.4)
       ext_rails (~> 0.3)
       ext_ruby (~> 0.2)
       jquery-rails (~> 4.2)

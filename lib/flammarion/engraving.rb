@@ -79,7 +79,7 @@ module Flammarion
       http_method = (params[:method] ||= :get).to_s.upcase!
 
       path_params = recognize_path(uri.path, params.merge!(query_params))
-      unless path_params.key?(:controller)
+      unless path_params && path_params.key?(:controller)
         raise ActionController::RoutingError, "No route matches [#{http_method}] #{url}"
       end
 

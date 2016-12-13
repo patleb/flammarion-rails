@@ -66,15 +66,12 @@ module Flammarion
       url = params.delete(:url)
       uri = URI.parse(url)
       query_params = Rack::Utils.parse_nested_query(uri.query)
-      request_params = {}
 
+      request_params = {}
       if params.key?(:form)
-        params[:method] = 'post'
         request_params = Rack::Utils.parse_nested_query(params.delete(:form))
         request_params[params.delete(:button)] = ''
-      end
-      if params.key?(:_method)
-        params[:method] = params[:_method]
+        params[:method] = request_params[:_method] || 'post'
       end
       http_method = (params[:method] ||= :get).to_s.upcase!
 

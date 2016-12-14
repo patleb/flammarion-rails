@@ -22,8 +22,8 @@ module Flammarion
 
       start_server
       @window_id = @@server.register_window(self)
-      open_a_window(options) unless options[:no_window]
-      wait_for_a_connection unless options[:no_wait]
+      open_a_window(options)
+      wait_for_a_connection(options)
     end
 
     # Blocks the current thread until the window has been closed. All user
@@ -112,10 +112,6 @@ module Flammarion
     end
 
     def render(body)
-      if @sockets.empty?
-        open_a_window
-        wait_for_a_connection
-      end
       if body.is_a? Hash
         body = body.to_json
       else
@@ -124,7 +120,6 @@ module Flammarion
       @sockets.each do |ws|
         ws.send_data(body, binary)
       end
-      nil
     end
 
     def parse_nested_query(query)

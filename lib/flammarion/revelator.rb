@@ -20,8 +20,8 @@ module Flammarion
       raise SetupError.new("You must have google-chrome installed and accesible via your path.") unless @browser
     end
 
-    def wait_for_a_connection
-       Timeout.timeout(40) { sleep 0.5 while @sockets.empty? }
+    def wait_for_a_connection(options)
+       Timeout.timeout(options[:wait] || 20) { sleep 0.5 while @sockets.empty? }
      rescue Timeout::Error
        raise SetupError.new("Timed out while waiting for a connecting using #{@browser.name}.")
     end

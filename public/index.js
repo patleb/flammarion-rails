@@ -83,7 +83,7 @@ ws.onmessage_actions = {
     var page = document.open("text/html", "replace");
     page.write(ws_data.body);
     page.close();
-    window.scrollTo(0, 0); // TODO take into account the url anchor
+    window.scrollTo(0, 0);
   },
   error: function (event) {
     console.log(ws_data.title);

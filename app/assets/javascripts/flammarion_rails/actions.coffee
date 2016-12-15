@@ -37,6 +37,7 @@ if $.pjax?
     new_page.html(ws_data.body)
     container = new_page.find('[data-pjax-container]')
     $('[data-pjax-container]').html(container.html())
+    $(window).scrollTop(0) # TODO take into account the url anchor
     $(document).trigger('rails_admin.dom_ready')
 
 # Submit

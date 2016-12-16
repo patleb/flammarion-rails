@@ -50,6 +50,7 @@ module Flammarion
         filename = headers['Content-Disposition'].sub(/.*filename=/, '').gsub(/(^"|"$)/, '')
         render(action: 'file', name: filename)
         render(response.body)
+        GC.start
       else
         render(action: action, body: response.body)
       end

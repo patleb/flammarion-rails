@@ -27,7 +27,7 @@ if NProgress?
 # Note: it's working for now, but it might be better to do something similar to the real pjax implementation
 
 if $.pjax?
-  PROTOCOL = /^.*:\/{2}/i
+  PROTOCOL = /^.*:\/{2}(?:\/C:)?/i
   $(document).on 'pjax:beforeSend', (event, xhr, settings) ->
     event.preventDefault()
     ws.send(action: 'pjax', url: settings.url.replace(PROTOCOL, ''))

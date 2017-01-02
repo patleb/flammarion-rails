@@ -1,3 +1,5 @@
+return unless ws?
+
 # Disable Back/Forward
 ########################################
 
@@ -58,23 +60,22 @@ ws.onmessage_actions.submit =
 # File
 ########################################
 
-if saveAs?
-  window.ws_file = null
+window.ws_file = null
 
-  ws.onmessage_actions.file = (event) ->
-    window.ws_file = ws_data.name
-    document.title = 'Downloading...'
+ws.onmessage_actions.file = (event) ->
+  window.ws_file = ws_data.name
+  document.title = 'Downloading...'
 
-  ws.send_before_actions.unshift (data) ->
-    if window.ws_file?
-      ws.send_skip_action = true
+ws.send_before_actions.unshift (data) ->
+  if window.ws_file?
+    ws.send_skip_action = true
 
-  ws.onmessage_before_actions.unshift (event) ->
-    if window.ws_file?
-      saveAs(event.data, window.ws_file)
-      document.title = window.ws_file
-      window.ws_file = null
-      ws.onmessage_skip_action = true
+ws.onmessage_before_actions.unshift (event) ->
+  if window.ws_file?
+    saveAs(event.data, window.ws_file)
+    document.title = window.ws_file
+    window.ws_file = null
+    ws.onmessage_skip_action = true
 
 # Ajax
 ########################################

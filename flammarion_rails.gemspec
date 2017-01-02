@@ -23,6 +23,7 @@ Gem::Specification.new do |s|
   s.add_dependency "ext_ruby", "~> 0.2"
   s.add_dependency "ext_rails", "~> 0.3"
   s.add_dependency "jquery-rails", "~> 4.2"
+  s.add_dependency 'filesaver_rails', '~> 0.1'
 
   s.add_development_dependency 'nprogress-rails', '~> 0.2'
   s.add_development_dependency "pjax_rails", '~> 0.4'

@@ -44,7 +44,7 @@ module Flammarion
       dispatch(params)
 
       if status == 302
-        dispatch(url: headers['Location'].sub(PROTOCOL, ''), session: response.request.session)
+        dispatch(url: headers['Location'].sub(PROTOCOL, ''), session: request.session)
         render(action: 'page', body: response.body)
       elsif headers['Content-Transfer-Encoding'] == 'binary'
         filename = headers['Content-Disposition'].sub(/.*filename=/, '').gsub(/(^"|"$)/, '')

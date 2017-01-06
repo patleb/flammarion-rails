@@ -7,6 +7,25 @@ history.pushState(null, null, document.URL)
 window.addEventListener 'popstate', ->
   history.pushState(null, null, document.URL)
 
+# Page
+########################################
+# Note: allow to skip css reloading which causes unstyled page sudden burst
+
+extract_first_tag = (html, tag) ->
+  start_match = ///<#{tag}.*>///.exec(html)
+  end_match = html.indexOf("</#{tag}>")
+  html.substring(start_match.index + start_match[0].length, end_match)
+
+ws.onmessage_actions.page = (event) ->
+  head = extract_first_tag(ws_data.body, 'head')
+  head = head.replace(/\s\/>/g, ">").replace(/'/g, '"')
+  body = extract_first_tag(ws_data.body, 'body')
+  unless head == document.head.innerHTML
+    $('head').html(head)
+  $('body').html(body)
+  $(window).scrollTop(0)
+  $.ready()
+
 # NProgress
 ########################################
 

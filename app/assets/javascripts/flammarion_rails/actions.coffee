@@ -24,7 +24,7 @@ ws.onmessage_actions.page = (event) ->
     $('head').html(head)
   $('body').html(body)
   $(window).scrollTop(0)
-  $.ready()
+  $.triggerReady()
 
 # NProgress
 ########################################

@@ -9,7 +9,7 @@ GIT
 PATH
   remote: .
   specs:
-    flammarion_rails (0.3.1)
+    flammarion_rails (0.3.2)
       ext_rails (~> 0.3)
       ext_ruby (~> 0.2)
       filesaver_rails (~> 0.1)

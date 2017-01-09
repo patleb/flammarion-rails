@@ -1,3 +1,5 @@
+return unless ws?
+
 # https://stackoverflow.com/questions/2238030/trigger-document-ready-so-ajax-code-i-cant-modify-is-executed#answer-8125920
 window.readyList = []
 

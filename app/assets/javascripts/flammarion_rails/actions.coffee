@@ -96,6 +96,24 @@ ws.onmessage_before_actions.unshift (event) ->
     window.ws_file = null
     ws.onmessage_skip_action = true
 
+# Modal
+########################################
+# Note: workaround so it doesn't crash
+
+$(document).on 'rails_admin.dom_ready', ->
+  $('[data-link]').each (_index, element) ->
+    link = $(element)
+    path = link.attr('data-link')
+    if path.match /__ID__/
+      path = path.replace(/__ID__.*/, '')
+    else
+      path = path.replace('modal=true', '')
+    $(link).replaceWith """
+      <a href="#{path}" class="#{link.attr('class')} pjax" style="#{link.attr('style')}">
+        #{link.html()}
+      </a>
+      """
+
 # Ajax
 ########################################
 # Note: app specific, $.ajax must be overriden
@@ -104,11 +122,10 @@ ws.onmessage_before_actions.unshift (event) ->
 #
 # $.ajax = (xhr) ->
 #   if xhr.type?
-#     return ws.ajax_handler(xhr)
+#     return window.ajax_handler(xhr)
 #
 #   switch xhr.dataType
 #     when 'text'
-#       modal = $('#modal').data('ra-remoteForm')
 #       ...
 #     when 'json'
 #       ...
